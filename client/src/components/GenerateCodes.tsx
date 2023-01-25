@@ -5,18 +5,18 @@ type Inputs = {
     prefix?: string;
     leadingZeroes?: number;
     suffix?: string;
+    logo?: File[];
 };
 
 const GenerateCodes: React.FC = () => {
     const { register, handleSubmit, formState: { errors } } = useForm<Inputs>();
     const [url, setUrl] = React.useState();
-    const onSubmit: SubmitHandler<Inputs> = (data) => {
+
+    const onSubmit: SubmitHandler<Inputs> = (_, evt) => {
+        const formData = new FormData(evt?.target);
         fetch("/api/generate", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data),
+            body: formData,
         }).then(async (resp) => {
             const body = await resp.json();
             setUrl(body.url);
@@ -37,6 +37,9 @@ const GenerateCodes: React.FC = () => {
 
                 <label htmlFor="suffix">Suffix</label>
                 <input id="suffix" {...register("suffix")} />
+
+                <label htmlFor="logo">Logo</label>
+                <input type="file" {...register("logo")} />
 
                 <button type="submit">Generate</button>
             </form>

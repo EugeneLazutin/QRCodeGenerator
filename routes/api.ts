@@ -1,5 +1,8 @@
 import express, { Request, Response } from "express";
-import { createQrCode } from "../utils/qrCode";
+import { createQrCode, createQrCodeWithLogo } from "../utils/qrCode";
+import multer from "multer";
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
@@ -8,9 +11,24 @@ router.get("/", (req: Request, res: Response) => {
   res.send({ message: "respond with a resource" });
 });
 
-router.post("/generate", async (req: Request, res: Response) => {
-  const url = await createQrCode(`${req.body.prefix}00001${req.body.suffix}`);
-  res.send({ url });
-});
+router.post(
+  "/generate",
+  upload.single("logo"),
+  async (req: Request, res: Response) => {
+    let url;
+    if (req.file) {
+      url = await createQrCodeWithLogo(
+        `${req.body.prefix}00001${req.body.suffix}`,
+        req.file.buffer
+      );
+    } else {
+      url = await createQrCode(`${req.body.prefix}00001${req.body.suffix}`);
+    }
+
+    res.send({
+      url,
+    });
+  }
+);
 
 export default router;
