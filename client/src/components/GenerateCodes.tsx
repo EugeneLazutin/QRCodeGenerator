@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 type Inputs = {
+    amount: number;
     prefix?: string;
     leadingZeroes?: number;
     suffix?: string;
@@ -43,13 +44,16 @@ const GenerateCodes: React.FC = () => {
                 <label htmlFor="suffix">Suffix</label>
                 <input id="suffix" {...register("suffix")} />
 
+                <label htmlFor="amount">Amount of codes</label>
+                <input type="number" {...register("amount", { required: true })} />
+
                 <label htmlFor="logo">Logo</label>
                 <input type="file" {...register("logo")} />
 
                 <button type="submit" disabled={isLoading}>{isLoading ? "Lading..." : "Generate"}</button>
             </form>
             {urls.map((url, i) => {
-                return <div key={i}>{i} <img src={url} alt="qr code" /></div>;
+                return <div key={i}>{i + 1} <img src={url} alt="qr code" /></div>;
             })}
         </div>
     );
