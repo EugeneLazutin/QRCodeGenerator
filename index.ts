@@ -1,8 +1,5 @@
 import app from "./app";
-import createDebug from "debug";
 import http from "http";
-
-const debug = createDebug("Tappr");
 
 /**
  * Get port from environment and store in Express.

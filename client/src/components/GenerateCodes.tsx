@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 type Inputs = {
@@ -10,18 +10,23 @@ type Inputs = {
 
 const GenerateCodes: React.FC = () => {
     const { register, handleSubmit, formState: { errors } } = useForm<Inputs>();
-    const [url, setUrl] = React.useState();
+    const [urls, setUrls] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const onSubmit: SubmitHandler<Inputs> = (_, evt) => {
         const formData = new FormData(evt?.target);
+        setIsLoading(true);
+        setUrls([]);
         fetch("/api/generate", {
             method: "POST",
             body: formData,
         }).then(async (resp) => {
             const body = await resp.json();
-            setUrl(body.url);
-        }).catch(() => {
-            console.log("fail");
+            setUrls(body.qrCodes);
+        }).catch((error: Error) => {
+            alert(error.message ?? "An error occurred during code generation.");
+        }).finally(() => {
+            setIsLoading(false);
         });
     };
 
@@ -41,11 +46,12 @@ const GenerateCodes: React.FC = () => {
                 <label htmlFor="logo">Logo</label>
                 <input type="file" {...register("logo")} />
 
-                <button type="submit">Generate</button>
+                <button type="submit" disabled={isLoading}>{isLoading ? "Lading..." : "Generate"}</button>
             </form>
-            <img src={url} alt="qr code" />
+            {urls.map((url, i) => {
+                return <div key={i}>{i} <img src={url} alt="qr code" /></div>;
+            })}
         </div>
-       
     );
 }
 
