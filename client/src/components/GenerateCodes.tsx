@@ -39,14 +39,16 @@ const GenerateCodes: React.FC = () => {
                 <input id="prefix" {...register("prefix")} />
 
                 <label htmlFor="leading-zeroes">Number of leading zeroes</label>
-                <input id="leading-zeroes" {...register("leadingZeroes", { valueAsNumber: true })} />
-                {errors.leadingZeroes && <span>This field is required</span>}
+                <input id="leading-zeroes" {...register("leadingZeroes", { min: 0 })} />
+                {errors.leadingZeroes?.type === "min" && <div className="error">Should be a positive number</div>}
 
                 <label htmlFor="suffix">Suffix</label>
                 <input id="suffix" {...register("suffix")} />
 
                 <label htmlFor="amount">Amount of codes</label>
-                <input type="number" {...register("amount", { required: true, valueAsNumber: true })} />
+                <input type="number" {...register("amount", { required: true, min: 1 })} />
+                {errors.amount?.type === "required" && <div className="error">This field is required</div>}
+                {errors.amount?.type === "min" && <div className="error">Should be a positive number</div>}
 
                 <label htmlFor="logo">Logo</label>
                 <input type="file" {...register("logo")} />

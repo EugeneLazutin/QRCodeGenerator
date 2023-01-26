@@ -13,7 +13,10 @@ import { format } from "date-fns";
 export const getFullConfig = (config: QRCodeConfig): Required<QRCodeConfig> => {
   return {
     amount: config.amount,
-    leadingZeroes: config.leadingZeroes || 0,
+    leadingZeroes:
+      config.leadingZeroes && config.leadingZeroes > 0
+        ? config.leadingZeroes
+        : 0,
     prefix: config.prefix || generate(),
     suffix: config.suffix || format(new Date(), "yyyy"),
   };
