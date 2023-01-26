@@ -8,7 +8,7 @@ The app consists of two parts: server and client. The client app is placed in th
 
 ## Dependencies
 
-App is running on `v17.0.1` node. Each app has it's own dependencies run `npm i` in the root folder for server and `cd client && npm i` for the client app.
+App is running on `v17.0.1` node. Each app has it's own dependencies. Run `npm i` in the root folder for server and `cd client && npm i` for the client app.
 
 ## Running
 
