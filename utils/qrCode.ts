@@ -30,10 +30,10 @@ export const getFullConfig = (config: QRCodeConfig): Required<QRCodeConfig> => {
  */
 export const createQrCode = (
   value: string,
-  size: number,
+  minSize: number,
   logo?: LogoConfig
 ) => {
-  const canvas = createCanvas(size, size);
+  const canvas = createCanvas(minSize, minSize);
   QRCode.toCanvas(canvas, value, {
     // using a high error correctness level allows us to put an image over the QR code and still be able to read it
     errorCorrectionLevel: "H",
@@ -41,6 +41,7 @@ export const createQrCode = (
   });
 
   if (logo) {
+    const size = canvas.width;
     const ctx = canvas.getContext("2d");
     const logoPosition = (size - logo.size) / 2;
 
