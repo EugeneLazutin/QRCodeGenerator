@@ -1,17 +1,29 @@
 import { createCanvas, Image } from "canvas";
 import QRCode from "qrcode";
+import { getBase64FromDataUrl } from ".";
+import { LogoConfig, QRCodeConfig, QrCodeImg } from "../types";
+import { generate } from "shortid";
+import { format } from "date-fns";
 
-type LogoConfig = {
-  image: Image;
-  size: number;
-  margin: number;
+/**
+ * Completes configuration with missing values
+ * @param config QR code config
+ * @returns QR code config
+ */
+export const getFullConfig = (config: QRCodeConfig): Required<QRCodeConfig> => {
+  return {
+    amount: config.amount,
+    leadingZeroes: config.leadingZeroes || 0,
+    prefix: config.prefix || generate(),
+    suffix: config.suffix || format(new Date(), "yyyy"),
+  };
 };
 
 /**
  * @param value string to encode
  * @param size QR code size in pixels
  * @param logo optional logo config
- * @returns base64 image url
+ * @returns dataURL
  */
 export const createQrCode = (
   value: string,
@@ -46,27 +58,29 @@ export const createQrCode = (
   return canvas.toDataURL("image/png");
 };
 
-type QRCodeSettings = {
-  amount: number;
-  prefix?: string;
-  leadingZeroes?: number;
-  suffix?: string;
-};
-
-export const createQRCodes = (settings: QRCodeSettings, logo?: Image) => {
-  const { amount, prefix, leadingZeroes = 0, suffix } = settings;
+export const createQRCodes = (
+  config: QRCodeConfig,
+  logo?: Image
+): QrCodeImg[] => {
+  const { amount, prefix, leadingZeroes = 0, suffix } = config;
   const qrCodeSize = 100;
-  const qrCodes = [];
+  const qrCodes: QrCodeImg[] = [];
   const logoConfig: LogoConfig | undefined = logo && {
     image: logo,
     size: 22,
     margin: 3,
   };
+
+  // start from 1 to skip 0 as identifier
   for (let i = 1; i <= amount; i++) {
     const id = i.toString().padStart(leadingZeroes, "0");
     const code = `${prefix} ${id} ${suffix}`;
-    const qrCode = createQrCode(code, qrCodeSize, logoConfig);
-    qrCodes.push(qrCode);
+    const qrCodeDataUrl = createQrCode(code, qrCodeSize, logoConfig);
+    qrCodes.push({
+      name: `${code}.png`,
+      base64: getBase64FromDataUrl(qrCodeDataUrl),
+    });
   }
+
   return qrCodes;
 };

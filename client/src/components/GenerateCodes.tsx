@@ -11,19 +11,20 @@ type Inputs = {
 
 const GenerateCodes: React.FC = () => {
     const { register, handleSubmit, formState: { errors } } = useForm<Inputs>();
-    const [urls, setUrls] = useState([]);
+    // TODO: show error messages
+    const [url, setUrl] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
 
     const onSubmit: SubmitHandler<Inputs> = (_, evt) => {
         const formData = new FormData(evt?.target);
         setIsLoading(true);
-        setUrls([]);
+        setUrl(undefined);
         fetch("/api/generate", {
             method: "POST",
             body: formData,
         }).then(async (resp) => {
             const body = await resp.json();
-            setUrls(body.qrCodes);
+            setUrl(body.url);
         }).catch((error: Error) => {
             alert(error.message ?? "An error occurred during code generation.");
         }).finally(() => {
@@ -38,23 +39,21 @@ const GenerateCodes: React.FC = () => {
                 <input id="prefix" {...register("prefix")} />
 
                 <label htmlFor="leading-zeroes">Number of leading zeroes</label>
-                <input id="leading-zeroes" defaultValue={0} {...register("leadingZeroes", { required: true, valueAsNumber: true })} />
+                <input id="leading-zeroes" {...register("leadingZeroes", { valueAsNumber: true })} />
                 {errors.leadingZeroes && <span>This field is required</span>}
 
                 <label htmlFor="suffix">Suffix</label>
                 <input id="suffix" {...register("suffix")} />
 
                 <label htmlFor="amount">Amount of codes</label>
-                <input type="number" {...register("amount", { required: true })} />
+                <input type="number" {...register("amount", { required: true, valueAsNumber: true })} />
 
                 <label htmlFor="logo">Logo</label>
                 <input type="file" {...register("logo")} />
 
                 <button type="submit" disabled={isLoading}>{isLoading ? "Lading..." : "Generate"}</button>
             </form>
-            {urls.map((url, i) => {
-                return <div key={i}>{i + 1} <img src={url} alt="qr code" /></div>;
-            })}
+            {url && <div>Download: <a href={url}>zip archive</a></div>}
         </div>
     );
 }
