@@ -1,10 +1,92 @@
-import React from "react";
-import GenerateCodes from "./components/GenerateCodes";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { io, Socket } from "socket.io-client";
 
-function App() {
+type Inputs = {
+  amount: number;
+  prefix?: string;
+  leadingZeroes?: number;
+  suffix?: string;
+  logo?: File[];
+};
+
+const App: React.FC = () => {
+  const [url, setUrl] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
+
+  let socket = useRef<Socket>() as MutableRefObject<Socket>;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>();
+
+  useEffect(() => {
+    socket.current = io();
+
+    socket.current.on("progress", (progress) => {
+      setProgress(progress);
+    });
+
+    socket.current.on("result", ({ url, fileName }) => {
+      setProgress(null);
+      setUrl(url);
+      setFileName(fileName);
+      setIsLoading(false);
+    });
+
+    return () => {
+      socket.current.disconnect();
+    };
+  }, []);
+
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    setIsLoading(true);
+    setUrl(null);
+    setFileName(null);
+    setProgress(0);
+    socket.current.emit("generateQrCodes", data);
+  };
+
   return (
-    <GenerateCodes />
+    <div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <label htmlFor="prefix">Prefix</label>
+        <input id="prefix" {...register("prefix")} />
+
+        <label htmlFor="leading-zeroes">Number of leading zeroes</label>
+        <input id="leading-zeroes" {...register("leadingZeroes", { min: 0 })} />
+        {errors.leadingZeroes?.type === "min" && (
+          <div className="error">Should be a positive number</div>
+        )}
+
+        <label htmlFor="suffix">Suffix</label>
+        <input id="suffix" {...register("suffix")} />
+
+        <label htmlFor="amount">Amount of codes</label>
+        <input type="number" {...register("amount", { required: true, min: 1 })} />
+        {errors.amount?.type === "required" && (
+          <div className="error">This field is required</div>
+        )}
+        {errors.amount?.type === "min" && (
+          <div className="error">Should be a positive number</div>
+        )}
+
+        <label htmlFor="logo">Logo</label>
+        <input type="file" {...register("logo")} />
+
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? "Lading..." : "Generate"}
+        </button>
+      </form>
+      {progress !== null ? <div>Progress: {progress}%</div> : null}
+      {progress === 100 && <div>Packing the archive, almost ready</div>}
+      {url && <div>Download: <a href={url}>{fileName}</a></div>}
+    </div>
   );
-}
+};
 
 export default App;

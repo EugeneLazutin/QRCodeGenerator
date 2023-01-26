@@ -1,3 +1,4 @@
+// REST API is not used since I switched to sockets, but I don't wont to remove it
 import express, { Request, Response } from "express";
 import { createQRCodes, getFullConfig } from "../utils/qrCode";
 import multer from "multer";
@@ -29,7 +30,7 @@ router.post(
     if (req.file) {
       logo = await loadImage(req.file.buffer);
     }
-    const qrCodes = createQRCodes(config, logo);
+    const qrCodes = await createQRCodes(config, logo);
     const currDate = format(new Date(), "ddMMyy-HHmm");
     const fileName = `${config.prefix}-${currDate}-${config.suffix}.zip`;
     const dirName = path.join(__dirname, `../client/public/zip`);

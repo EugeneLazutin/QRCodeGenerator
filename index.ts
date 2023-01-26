@@ -1,5 +1,7 @@
 import app from "./app";
 import http from "http";
+import { Server } from "socket.io";
+import { generateQrCodesSocket } from "./routes/sockets";
 
 /**
  * Get port from environment and store in Express.
@@ -13,6 +15,9 @@ app.set("port", port);
  */
 
 const server = http.createServer(app);
+
+const io = new Server(server);
+io.on("connection", generateQrCodesSocket);
 
 /**
  * Listen on provided port, on all network interfaces.

@@ -61,10 +61,12 @@ export const createQrCode = (
   return canvas.toDataURL("image/png");
 };
 
-export const createQRCodes = (
+export const createQRCodes = async (
   config: QRCodeConfig,
-  logo?: Image
-): QrCodeImg[] => {
+  logo?: Image,
+  trackProgress?: (progress: number) => void
+): Promise<QrCodeImg[]> => {
+  const stepSize = 100;
   const { amount, prefix, leadingZeroes = 0, suffix } = config;
   const qrCodeSize = 100;
   const qrCodes: QrCodeImg[] = [];
@@ -75,14 +77,28 @@ export const createQRCodes = (
   };
 
   // start from 1 to skip 0 as identifier
-  for (let i = 1; i <= amount; i++) {
-    const id = i.toString().padStart(leadingZeroes, "0");
-    const code = `${prefix} ${id} ${suffix}`;
-    const qrCodeDataUrl = createQrCode(code, qrCodeSize, logoConfig);
-    qrCodes.push({
-      name: `${code}.png`,
-      base64: getBase64FromDataUrl(qrCodeDataUrl),
+  for (let step = 1; step <= amount; step += stepSize) {
+    /* Since NodeJS is singe threaded this loop will block the main thread and we won't be able to track progress.
+     * To fix it I splitted the loop into the separate chunks, so JS engine can handle other functions.
+     * Perfectly this should be replaces by worker_threads, but it does not support canvas yet, the link to the issue below.
+     * https://github.com/Automattic/node-canvas/issues/1536#issuecomment-600739090
+     */
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        for (let i = step; i < step + stepSize && i <= amount; i++) {
+          const id = i.toString().padStart(leadingZeroes, "0");
+          const code = `${prefix} ${id} ${suffix}`;
+          const qrCodeDataUrl = createQrCode(code, qrCodeSize, logoConfig);
+          qrCodes.push({
+            name: `${code}.png`,
+            base64: getBase64FromDataUrl(qrCodeDataUrl),
+          });
+        }
+        resolve();
+      }, 0);
     });
+
+    trackProgress?.((step * stepSize) / amount);
   }
 
   return qrCodes;
