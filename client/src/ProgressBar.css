@@ -1,0 +1,34 @@
+.background {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    backdrop-filter: blur(2px);
+}
+
+.container {
+    position: relative;
+}
+
+.message {
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    text-align: center;
+}
+
+.progressBar {
+    width: 350px;
+    height: 3.5em;
+
+    text-align: center;
+}
+
+.progressBar::after {
+    content: attr(value)"%";
+    line-height: 3.5em;
+}

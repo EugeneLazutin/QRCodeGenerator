@@ -1,3 +1,7 @@
+.formWrapper {
+    position: relative;
+}
+
 .error {
     color: red;
 }
