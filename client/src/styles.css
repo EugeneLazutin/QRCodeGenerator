@@ -5,3 +5,9 @@
 .error {
     color: red;
 }
+
+input.error {
+    color: #1d1d1d;
+    border-color: #cc0000;
+    box-shadow: 0 0 3px #cc0000;
+}

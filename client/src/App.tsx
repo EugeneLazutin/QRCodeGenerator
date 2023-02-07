@@ -1,5 +1,6 @@
 import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { Tooltip } from "react-tooltip";
 import { io, Socket } from "socket.io-client";
 import ProgressBar from "./ProgressBar";
 
@@ -23,7 +24,7 @@ const App: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Inputs>();
+  } = useForm<Inputs>({ mode: "onChange" });
 
   useEffect(() => {
     socket.current = io();
@@ -59,21 +60,37 @@ const App: React.FC = () => {
         <input id="prefix" {...register("prefix", { disabled: isLoading })} />
 
         <label htmlFor="leading-zeroes">Number of leading zeroes</label>
-        <input id="leading-zeroes" {...register("leadingZeroes", { disabled: isLoading, min: 0 })} />
+        <input id="leading-zeroes" type="number" className={errors.leadingZeroes && "error"}
+          {...register("leadingZeroes", { disabled: isLoading, min: 0 })} />
+
         {errors.leadingZeroes?.type === "min" && (
-          <div className="error">Should be a positive number</div>
+          <Tooltip 
+            anchorId="leading-zeroes"
+            variant="error"
+            place="right"
+            content="Should be a positive number" />
         )}
 
         <label htmlFor="suffix">Suffix</label>
         <input id="suffix" {...register("suffix", { disabled: isLoading })} />
 
         <label htmlFor="amount">Amount of codes</label>
-        <input type="number" {...register("amount", { disabled: isLoading, required: true, min: 1 })} />
+        <input id="amount" type="number" className={errors.amount && "error"}
+          {...register("amount", { disabled: isLoading, required: true, min: 1 })} />
+        
         {errors.amount?.type === "required" && (
-          <div className="error">This field is required</div>
+          <Tooltip 
+            anchorId="amount"
+            variant="error"
+            place="right"
+            content="This field is required" />
         )}
         {errors.amount?.type === "min" && (
-          <div className="error">Should be a positive number</div>
+          <Tooltip 
+            anchorId="amount"
+            variant="error"
+            place="right"
+            content="Should be a positive number" />
         )}
 
         <label htmlFor="logo">Logo</label>
